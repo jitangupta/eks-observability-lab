@@ -135,6 +135,9 @@ Deploy and split Online Boutique:
 Use `kubernetes/charts/` only for actual charts or chart wrappers. Keep direct
 manifests and policy resources in their functional subfolders.
 
+The pinned, rerunnable Phase 3 controller installation is documented in
+[`kubernetes/controllers/aws-load-balancer-controller/README.md`](kubernetes/controllers/aws-load-balancer-controller/README.md).
+
 ### 3. Observability session
 
 Add the minimum signals required to investigate both incidents:

@@ -1,0 +1,12 @@
+# Stable settings shared by both clusters. Cluster-specific values and the IRSA role
+# annotation are supplied by install.ps1 from the current Terraform outputs.
+
+replicaCount: 2
+
+serviceAccount:
+  create: true
+  name: aws-load-balancer-controller
+
+# Make the AWS Load Balancer Controller the controller for new LoadBalancer Services.
+enableServiceMutatorWebhook: true
+

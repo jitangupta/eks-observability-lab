@@ -1,0 +1,58 @@
+# C1 (us-east-1): Online Boutique application tier without cart or Redis.
+
+images:
+  repository: us-central1-docker.pkg.dev/google-samples/microservices-demo
+  tag: v0.10.4
+
+serviceAccounts:
+  create: true
+
+# Network and authorization policies are applied separately in Phase 6.
+networkPolicies:
+  create: false
+authorizationPolicies:
+  create: false
+sidecars:
+  create: false
+opentelemetryCollector:
+  create: false
+
+googleCloudOperations:
+  profiler: false
+  tracing: false
+  metrics: false
+
+adService:
+  create: true
+cartService:
+  create: false
+checkoutService:
+  create: true
+currencyService:
+  create: true
+emailService:
+  create: true
+frontend:
+  create: true
+  externalService: false
+  platform: aws
+loadGenerator:
+  create: true
+paymentService:
+  create: true
+productCatalogService:
+  create: true
+recommendationService:
+  create: true
+shippingService:
+  create: true
+shoppingAssistantService:
+  create: false
+
+# C1 will receive a cartservice DNS alias to the C2 internal NLB in Phase 5.
+cartDatabase:
+  type: redis
+  connectionString: redis-cart:6379
+  inClusterRedis:
+    create: false
+

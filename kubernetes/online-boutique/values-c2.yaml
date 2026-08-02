@@ -1,0 +1,60 @@
+# C2 (us-west-2): cartservice and its private, in-cluster Redis datastore only.
+
+images:
+  repository: us-central1-docker.pkg.dev/google-samples/microservices-demo
+  tag: v0.10.4
+
+serviceAccounts:
+  create: true
+
+# Network and authorization policies are applied separately in Phase 6.
+networkPolicies:
+  create: false
+authorizationPolicies:
+  create: false
+sidecars:
+  create: false
+opentelemetryCollector:
+  create: false
+
+googleCloudOperations:
+  profiler: false
+  tracing: false
+  metrics: false
+
+adService:
+  create: false
+cartService:
+  create: true
+checkoutService:
+  create: false
+currencyService:
+  create: false
+emailService:
+  create: false
+frontend:
+  create: false
+  externalService: false
+  platform: aws
+loadGenerator:
+  create: false
+paymentService:
+  create: false
+productCatalogService:
+  create: false
+recommendationService:
+  create: false
+shippingService:
+  create: false
+shoppingAssistantService:
+  create: false
+
+cartDatabase:
+  type: redis
+  connectionString: redis-cart:6379
+  inClusterRedis:
+    create: true
+    name: redis-cart
+    # The vendored template's public Redis reference is digest-pinned.
+    publicRepository: true
+
