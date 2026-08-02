@@ -18,7 +18,7 @@ PROJECT = "eks-observability-lab"
 APPLICATION_NAMESPACE = "online-boutique"
 EXPECTED_ALB_NAME = f"{PROJECT}-c1-web"
 EXPECTED_NLB_NAME = f"{PROJECT}-c2-cart"
-FAULT_STATES = ("healthy", "fault1", "restored")
+FAULT_STATES = ("healthy", "fault1", "fault2", "restored")
 
 
 def utc_now() -> str:
@@ -738,7 +738,7 @@ class KubernetesChecks:
                     "stderr": result.stderr.strip(),
                 }
             evidence["outcomes"] = outcomes
-            authorized_should_connect = self.state in ("healthy", "restored")
+            authorized_should_connect = self.state != "fault1"
             authorized_connected = outcomes["authorized"]["exit_code"] == 0
             unauthorized_connected = outcomes["unauthorized"]["exit_code"] == 0
             errors: list[str] = []

@@ -67,11 +67,13 @@ Read-only preflight, which deliberately leaves the active-probe gate incomplete:
 python .\verification\verify.py --state healthy --config-only
 ```
 
-Fault 1 and restoration evidence use the same checks with different explicit
-expectations:
+Fault 1, Fault 2, and restoration evidence use the same checks with different
+explicit expectations. Fault 2 retains a healthy authorized cart probe because its
+blast radius is the C1 product catalog workload, not the cross-region network:
 
 ```powershell
 python .\verification\verify.py --state fault1
+python .\verification\verify.py --state fault2
 python .\verification\verify.py --state restored
 ```
 

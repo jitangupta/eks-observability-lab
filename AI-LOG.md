@@ -406,3 +406,82 @@ available.
 - The operator supplied mailbox screenshots confirming both the Grafana FIRING and
   RESOLVED notifications. Archived both images in the Phase 10 incident bundle and
   updated its evidence manifest, closing the email-delivery evidence limitation.
+
+## 2026-08-02 - Phase 11: Fault 2 workload OOM incident
+
+### Assistance
+
+- Added a C1 Terraform-scoped command with non-mutating `preflight`, guarded
+  `inject --execute`, and injection-manifest-bound `restore --execute` operations for
+  `productcatalogservice`.
+- Locked the final invalid configuration to a `4Mi` memory request and limit while
+  preserving CPU settings. The mutation journals the complete previous `resources`
+  object and uses JSON Patch tests for resource version and exact current resources
+  before atomically replacing it.
+- Added immediate evidence preservation for Deployment, Pod, Event, current log, and
+  previous log data, including explicit gates for `OOMKilled`, exit 137,
+  `CrashLoopBackOff`, and restart count.
+- Added active-incident and recovery capture for ReplicaSet/rollout state, frontend
+  effects, Grafana alerts/dashboard, and the scoped verifier. Extended the verifier
+  with a `fault2` state that positively requires the authorized C1-to-C2 cart probe
+  to remain connected while the unauthorized probe remains denied.
+
+### Verification and corrections
+
+- All 14 deterministic fault tests and all 5 verifier tests pass. Phase 11 coverage
+  includes Kubernetes memory quantity handling, CPU preservation, rejection of an
+  already-low baseline, atomic patch shape, OOM/137/CrashLoop parsing, cart blast-
+  radius assertions, and safe Grafana credential selection.
+- The live non-mutating preflight passed at `2026-08-02T17:52:14Z`: C1 had the
+  expected `64Mi` request and `128Mi` limit, patch authorization passed, and the API
+  server accepted the `1Mi` request/limit via dry-run without creating a rollout.
+- Initial live injection was delayed until the operator explicitly approved the
+  temporary `productcatalogservice` outage after being informed that it would
+  repeatedly OOM; no workaround around that safety gate was attempted.
+- After explicit approval, the first live injection exposed a missed capacity
+  assumption: the one-node C1 cluster had insufficient spare CPU for the default
+  surge Pod. The new Pod remained Pending, the old Pod stayed healthy, and therefore
+  no OOM or alert occurred. The evidence gate correctly returned `INCOMPLETE` instead
+  of fabricating the expected termination. Restored the exact baseline, then changed
+  the tool to atomically journal/use `Recreate` for this one-replica fault and restore
+  the exact previous `RollingUpdate` strategy afterward.
+- The corrected rollout exposed a second faulty assumption: `1Mi` killed Pod sandbox
+  initialization itself, producing repeated `FailedCreatePodSandBox` events but no
+  application container status, exit 137, restart metric, or configured alert.
+  Restored again and used local healthy Prometheus data (about 5.70 MB for the server
+  and 0.22 MB for pause) to select `4Mi`, above sandbox overhead but below the
+  application's demonstrated working set.
+- The successful injection applied at `2026-08-02T18:19:17Z`; by `18:19:22Z` the
+  application container had been OOMKilled with exit 137 and entered
+  CrashLoopBackOff. The passing investigation later captured five restarts, frontend
+  HTTP 500, and four active Grafana alerts. `Container OOMKilled`, `Application
+  container restarted`, and frontend availability began at `18:21:30Z`.
+- The fault-state verifier passed before a later recapture encountered only a stale
+  draining ALB target. Its active probes proved the authorized C1-to-C2 cart path
+  remained connected and the unauthorized caller remained denied. Capture now
+  reuses the latest passing verifier from the same incident bundle when refreshing
+  delayed Grafana evidence, avoiding false coupling to AWS's target-drain window.
+- The first restoration implementation changed resources and strategy back in one
+  patch. On this packed node, restoring `RollingUpdate` before a baseline Pod was
+  available recreated the same CPU scheduling deadlock. Recovery completed after
+  removing only the exact CrashLooping fault Pod. The tool now restores resources
+  under `Recreate`, waits for readiness, then restores the exact prior strategy and
+  can resume safely from either stage.
+- The primary restoration journal passed at `2026-08-02T18:26:39Z` with the exact
+  `64Mi` request, `128Mi` limit, and original `RollingUpdate` object. The final
+  recovery capture passed with one available replica, frontend HTTP 200, healthy cart
+  authorization behavior, and zero active Grafana alerts.
+- All 17 fault tests, 5 verifier tests, and 8 healthy-capture tests pass after the live
+  corrections. Grafana API evidence shows every incident alert routed to the
+  `phase7-email` receiver through the `lab=eks_observability` policy and resolved
+  messages are enabled. Mailbox screenshots remain a human evidence step because the
+  Grafana API proves routing but not delivery.
+- A final post-recovery preflight passed at `2026-08-02T18:42:43Z`, confirming the
+  live baseline is again request `64Mi`, limit `128Mi`, the fault is inactive, and the
+  corrected `4Mi` resources-plus-`Recreate` request remains server-dry-run valid for
+  a future rehearsal.
+- The operator supplied a mailbox screenshot showing FIRING and RESOLVED messages for
+  both `Container OOMKilled` and `Application container restarted`, plus the upstream
+  frontend availability messages. Archived the curated image under
+  `evidence/phase11/`, recorded its SHA-256, and closed the final Phase 11 evidence
+  gap.

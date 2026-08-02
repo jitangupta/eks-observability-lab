@@ -75,3 +75,10 @@ Run deterministic tests without cloud access:
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s .\evidence -p "test_*.py" -v
 ```
+
+## Curated incident evidence
+
+Generated incident bundles remain ignored because they contain live identifiers.
+Evidence deliberately selected for version control is stored by phase. Phase 11's
+Grafana FIRING and RESOLVED email proof is documented in
+[`phase11/README.md`](phase11/README.md).
