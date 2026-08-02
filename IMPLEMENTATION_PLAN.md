@@ -122,7 +122,9 @@ C2 must exist before C1 can be wired to its cart endpoint.
 5. Supply the Terraform-created NLB security group in the Service annotations at
    creation time.
 6. Wait for the NLB, targets, and private DNS name to become healthy.
-7. Test the NLB endpoint from a controlled pod inside C2.
+7. Test the NLB endpoint from a controlled pod inside C1. The NLB security group
+   intentionally accepts TCP/7070 only from the C1 VPC CIDR, so a C2-origin test
+   would conflict with the locked security boundary.
 
 Exit gate: C2 cart and Redis are healthy, Redis is private, and the internal NLB has
 healthy targets.
@@ -261,4 +263,3 @@ Exit gate: another engineer can follow the demo runbook without improvising comm
    WAF, Elastic IPs, and CloudWatch log groups are gone.
 6. Revoke or delete Grafana Cloud access tokens.
 7. Confirm the AWS billing dashboard has no unexpected lab resources.
-

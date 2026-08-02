@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cartservice-internal
+  namespace: online-boutique
+  labels:
+    app: cartservice
+    app.kubernetes.io/name: cartservice
+    app.kubernetes.io/part-of: online-boutique
+    lab.openai.com/cluster: c2
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-name: "eks-observability-lab-c2-cart"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+    service.beta.kubernetes.io/aws-load-balancer-ip-address-type: "ipv4"
+    service.beta.kubernetes.io/aws-load-balancer-subnets: "__C2_PRIVATE_SUBNET_IDS__"
+    service.beta.kubernetes.io/aws-load-balancer-security-groups: "__C2_NLB_SECURITY_GROUP_ID__"
+    service.beta.kubernetes.io/aws-load-balancer-manage-backend-security-group-rules: "false"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: "tcp"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "traffic-port"
+    service.beta.kubernetes.io/aws-load-balancer-attributes: "load_balancing.cross_zone.enabled=true"
+    service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "Project=eks-observability-lab,Cluster=c2,Component=cartservice"
+spec:
+  type: LoadBalancer
+  allocateLoadBalancerNodePorts: false
+  externalTrafficPolicy: Cluster
+  selector:
+    app: cartservice
+  ports:
+  - name: grpc-cart
+    protocol: TCP
+    port: 7070
+    targetPort: 7070

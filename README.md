@@ -137,6 +137,8 @@ manifests and policy resources in their functional subfolders.
 
 The pinned, rerunnable Phase 3 controller installation is documented in
 [`kubernetes/controllers/aws-load-balancer-controller/README.md`](kubernetes/controllers/aws-load-balancer-controller/README.md).
+The C2-first Phase 4 installation is documented in
+[`kubernetes/c2/README.md`](kubernetes/c2/README.md).
 
 ### 3. Observability session
 
