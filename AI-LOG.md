@@ -351,3 +351,58 @@ available.
   The lookback still contains earlier transient frontend-probe dips and a pre-filter
   synthetic card-rejection log; these are historical context rather than active
   alert state and can be aged out with an optional later recapture.
+
+## 2026-08-02 - Phase 10: Fault 1 NACL incident
+
+### Assistance
+
+- Added a Terraform-scoped Python command with explicit `preflight`, guarded
+  `inject --execute`, and injection-manifest-bound `restore --execute` operations.
+- Made preflight validate account identity, C2 VPC/subnet/NACL scope, rule-100
+  baseline allows, reserved-rule absence, and both create/delete permissions through
+  AWS DryRun requests before permitting a live mutation.
+- Journaled mutation intent before the first API call, recorded every changed NACL,
+  added automatic rollback for partial failures, and made restoration refuse rule
+  collisions or Terraform/manifest scope drift.
+- Added ordered incident capture for verifier dead ends, the live NACL, C2 Flow Log
+  rejects, CloudTrail management events, Grafana active alerts, and a UTC dashboard
+  render.
+
+### Verification and corrections
+
+- Eight Fault 1 unit tests passed, including a fake-EC2 inject/restore round trip,
+  exact API shape, collision and partial-state classification, out-of-scope subnet
+  refusal, restoration scope binding, and Grafana token parsing. Together with the
+  existing verifier and baseline suites, all 21 deterministic tests passed.
+- The non-mutating live preflight passed before injection: rule 50 was absent from
+  `acl-02d5c7eee7e2a2cca`, both Terraform private subnets were associated, and AWS
+  authorized both exact request shapes using `DryRun=True`.
+- Injected the exact ingress deny at `2026-08-02T17:12:43Z`. The complete fault-state
+  verifier passed 13/13: the authorized C1 probe failed, the unauthorized probe
+  remained denied, and workloads, targets, routes, security groups, CNI, and
+  Kubernetes exposure retained their intended state.
+- Captured the alert beginning at `2026-08-02T17:14:30Z`, 18 C2 TCP/7070 Flow Log
+  rejects, and one successful CloudTrail create event distinct from its earlier
+  DryRun validation event. The fault dashboard showed cart DOWN while frontend was
+  UP, all 12 application containers were Ready, and restarts/OOMs remained zero.
+- Restored only the journaled ingress rule at `2026-08-02T17:21:25Z`. The restored
+  verifier passed 13/13, the strict recovery bundle later passed 9/9, checkout
+  succeeded, cart latency recovered to 0.067992 seconds, and Grafana returned to no
+  active alerts. A repeated restore preview found no eligible entries, and a fresh
+  preflight proved the environment ready for another run.
+- The first during-fault verifier attempt exposed an environment prerequisite: the
+  kubeconfig exec plugin could not find AWS CLI. Installed AWS CLI only in the
+  ignored repository virtual environment, prepended that Scripts directory for the
+  verification process, and preserved both the failed and corrected reports.
+- The first Grafana investigation capture incorrectly assumed the ignored secret
+  file contained one raw token. The invalid-header exception echoed the file's
+  credential values. Corrected the reader to select only the labeled Grafana service
+  account, added tests for raw/labeled/ambiguous formats, and redacted future request
+  errors. Both exposed Grafana credentials must be rotated.
+- The first broad recovery capture correctly failed because one stale ALB target was
+  still in its configured 300-second draining window even though the current target
+  was healthy. Confirmed the stale IP did not belong to any current Pod, waited for
+  deregistration, and reran the strict bundle to PASS instead of weakening the gate.
+- The operator supplied mailbox screenshots confirming both the Grafana FIRING and
+  RESOLVED notifications. Archived both images in the Phase 10 incident bundle and
+  updated its evidence manifest, closing the email-delivery evidence limitation.

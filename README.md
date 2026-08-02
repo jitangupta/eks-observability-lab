@@ -186,6 +186,10 @@ entire AWS account.
 
 Create idempotent Python inject and restore commands.
 
+The implemented Fault 1 workflow is documented in
+[`faults/README.md`](faults/README.md). Always run its non-mutating `preflight`
+command and inspect the PASS manifest before an authorized live injection.
+
 Fault 1 must add a reserved, high-precedence `DENY` entry for the C1 CIDR and
 TCP/7070 to every NACL associated with the C2 NLB subnets. Injection must fail safely
 if the rule number is already occupied. Restoration removes only the exact injected
