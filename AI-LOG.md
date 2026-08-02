@@ -249,3 +249,47 @@ available.
   C2 TCP/30770 rule accepts only `10.10.0.0/16`. The pending NLB Service remains
   externally blocked and the fallback remains explicitly outside the formal Phase 4
   and Phase 5 gates.
+
+## 2026-08-02 - Phase 8: Build scoped verification tooling
+
+### Assistance
+
+- Added a Python/boto3 verifier that derives its resource scope from Terraform
+  outputs instead of scanning unrelated VPCs or clusters in the AWS account.
+- Added explicit allowlists for the expected public C1 ALB and internal C2 NLB,
+  including subnet, security-group, target-health, WAF, and Kubernetes ownership
+  evidence.
+- Added configuration checks for worker public addresses, security groups, private
+  route tables, VPC peering, C2 private-subnet NACLs, EKS endpoint access, and the
+  VPC CNI add-on configuration.
+- Added runtime checks for the `aws-eks-nodeagent`, reconciled `PolicyEndpoint`
+  objects, and Kubernetes Service/Ingress exposure.
+- Added short-lived, owner-backed authorized and unauthorized C1 probe Deployments.
+  The verifier expects the authorized probe to succeed in healthy/restored states,
+  fail during Fault 1, and expects the unauthorized probe to fail in every state.
+- Added UTC-stamped human and JSON reports under the ignored
+  `evidence/generated/phase8/` directory and non-zero exit behavior for failures.
+
+### Verification and corrections
+
+- Python compilation and five deterministic unit tests passed. Kubernetes accepted
+  both probe Deployments through server-side dry-run in C1.
+- The first read-only live preflight exposed a local dependency assumption: this
+  workstation's `aws login` credential profile requires AWS CRT in addition to
+  base boto3. Added the documented `botocore[crt]` dependency.
+- The same preflight found that the installed AWS CLI directory was absent from the
+  elevated process `PATH`, preventing kubeconfig exec authentication. Located the
+  existing per-user AWS CLI and documented that `aws` must be on `PATH`; no
+  kubeconfig or cluster resource was changed.
+- After those local corrections, the configuration-only live preflight passed all
+  eleven executed checks: AWS identity, exact ALB/NLB inventory, healthy targets,
+  two-rule WAF association, private workers, security-group boundaries, active
+  peering and private routes, clean baseline NACLs, restricted EKS endpoints and
+  active CNI configuration, Ready CNI agents with reconciled PolicyEndpoints, and
+  intended Kubernetes exposure.
+- The read-only report remained deliberately `INCOMPLETE` because active probe
+  creation was skipped. The operator then ran the full healthy verifier at
+  `2026-08-02T16:01:27Z`. All thirteen reported checks passed with zero failures or
+  skips: the authorized probe connected, the unauthorized probe was denied, and
+  cleanup returned exit code zero. The UTC-stamped text and JSON reports were saved
+  under `evidence/generated/phase8/`, satisfying the Phase 8 exit gate.

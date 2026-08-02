@@ -143,6 +143,8 @@ The gated Phase 5 C1 installation and cross-region alias are documented in
 [`kubernetes/c1/README.md`](kubernetes/c1/README.md).
 The VPC CNI-enforced Phase 6 application policies and probes are documented in
 [`kubernetes/network-policies/README.md`](kubernetes/network-policies/README.md).
+The scoped Phase 8 AWS/Kubernetes verifier and its state-aware active probes are
+documented in [`verification/README.md`](verification/README.md).
 
 ### 3. Observability session
 

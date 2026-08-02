@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phase8-authorized
+  namespace: online-boutique
+  labels:
+    lab.openai.com/verification: phase8
+    lab.openai.com/probe-role: authorized
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+      lab.openai.com/verification: phase8
+      lab.openai.com/probe-role: authorized
+  template:
+    metadata:
+      labels:
+        # The permanent C1 policy authorizes frontend and checkoutservice. The
+        # extra labels keep this short-lived probe distinct from real workloads.
+        app: frontend
+        lab.openai.com/verification: phase8
+        lab.openai.com/probe-role: authorized
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: probe
+        image: busybox:1.36.1
+        command:
+        - sh
+        - -c
+        - "trap : TERM INT; sleep 3600 & wait"
+        resources:
+          requests:
+            cpu: 5m
+            memory: 8Mi
+          limits:
+            cpu: 50m
+            memory: 32Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phase8-unauthorized
+  namespace: online-boutique
+  labels:
+    lab.openai.com/verification: phase8
+    lab.openai.com/probe-role: unauthorized
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phase8-unauthorized
+      lab.openai.com/verification: phase8
+      lab.openai.com/probe-role: unauthorized
+  template:
+    metadata:
+      labels:
+        app: phase8-unauthorized
+        lab.openai.com/verification: phase8
+        lab.openai.com/probe-role: unauthorized
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: probe
+        image: busybox:1.36.1
+        command:
+        - sh
+        - -c
+        - "trap : TERM INT; sleep 3600 & wait"
+        resources:
+          requests:
+            cpu: 5m
+            memory: 8Mi
+          limits:
+            cpu: 50m
+            memory: 32Mi

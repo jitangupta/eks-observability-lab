@@ -16,3 +16,8 @@ kubeconfig*
 .env.*
 evidence/generated/
 secrets/
+
+# Local Python verifier caches and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
