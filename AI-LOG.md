@@ -122,3 +122,83 @@ available.
   `cartservice-internal` Service remains pending for automatic controller retries.
 - The permanent recovery is an AWS Account and billing support case containing the
   ELBv2 `OperationNotPermitted` message and request IDs from the controller events.
+
+## 2026-08-02 - Phase 5: Prepare C1 deployment
+
+### Assistance
+
+- Added a rerunnable C1 installer that consumes current Terraform outputs and the
+  live C2 `cartservice-internal` Service status.
+- Added a C1 `cartservice` ExternalName Service template, preserving the stock
+  `cartservice:7070` address used by frontend and checkout.
+- Added an internet-facing ALB Ingress template with explicit public subnets, the
+  Terraform-managed ALB security group, IP targets, frontend health checks, and the
+  Terraform-managed WAF WebACL.
+- Documented the current HTTP-only demo trade-off and the Phase 5 user-journey exit
+  checks.
+
+### Gate status
+
+- Phase 5 deployment has not started because the Phase 4 NLB is still pending and
+  its targets cannot become healthy while AWS blocks load-balancer creation.
+- The installer enforces the locked phase order before making any C1 change: it
+  requires a live AWS ELB hostname from the C2 Service and rejects the temporary
+  NodePort/node-IP workaround as an alias target.
+
+### Verification and corrections
+
+- Verified both direct-resource templates by loading them through a temporary Helm
+  chart; Helm accepted the Kubernetes YAML structure.
+- Parsed `install.ps1` with the PowerShell parser and exercised mocked blocked and
+  successful paths. The blocked path made no apply/upgrade call without a C2 NLB
+  hostname; the successful path resolved every template placeholder and applied the
+  alias before the chart and Ingress.
+- Linted and rendered the C1 chart. It contains the ten intended C1 Deployments and
+  does not render `cartservice`, `redis-cart`, or `frontend-external`.
+- Cross-checked the ALB annotations against the AWS Load Balancer Controller
+  documentation, including IP targets, explicit frontend security groups, disabled
+  controller backend-rule management, and WAFv2 association.
+- Live C1 application, ALB, WAF association, and user-journey verification remain
+  blocked on the Phase 4 exit gate.
+
+### Time-boxed continuation
+
+- Rechecked the live C2 Service after the initial failure. The controller continued
+  retrying `CreateLoadBalancer` and AWS continued returning the same account-level
+  `OperationNotPermitted`, including request ID
+  `8976e7ab-8037-4bd3-b68c-db7ff34cf548` less than two minutes before the check.
+- Added a separate, explicitly acknowledged fallback installer rather than weakening
+  the target NLB-gated installer. It maps the stock C1 `cartservice:7070` Service to
+  the current C2 node's approved temporary TCP/30770 NodePort through a manually
+  managed EndpointSlice.
+- The fallback is private and reversible but is not load balanced, depends on one
+  node address, bypasses NLB target health, and cannot satisfy the Phase 4 or Phase 5
+  exit gates. The public user journey must use local port-forwarding while the same
+  ELBv2 account restriction prevents ALB creation.
+- The operator confirmed that the AWS account was approximately four hours old when
+  the failure occurred. AWS's account documentation says activation can sometimes
+  take up to 24 hours, and AWS expert-reviewed re:Post guidance for this exact ELB
+  error recommends waiting 24–48 hours for new accounts. Account age is now the
+  leading explanation, but it remains an inference until ELBv2 creation succeeds or
+  AWS Support confirms the restriction; the 24–48-hour window is not recorded as a
+  guaranteed service-activation SLA.
+
+### Fallback deployment and verification
+
+- At `2026-08-02T11:04:36Z`, the fallback was active with the C1 Service on
+  `cartservice:7070` forwarding through its EndpointSlice to the single Ready C2 node
+  at `10.20.20.222:30770`.
+- Installed C1 Helm release `online-boutique` revision 1. All ten intended C1 Pods
+  became Ready with zero restarts, and no `frontend-external` Service was created.
+- Confirmed the unmodified `CART_SERVICE_ADDR` value is `cartservice:7070` in both
+  frontend and checkout Deployments.
+- C2 cartservice logs showed live cross-region `GetCart`, `AddItem`, `EmptyCart`, and
+  health calls generated after the C1 deployment.
+- Ran an independent session through a temporary local frontend port-forward. Home,
+  product detail, add-to-cart, cart view, and checkout all returned HTTP 200, and the
+  checkout confirmation was present.
+- Corrected the first local verification command after it used `$home` as a response
+  variable. PowerShell variable names are case-insensitive, so this attempted to
+  overwrite the protected `$HOME` variable. The corrected command used
+  `$homeResponse`; this error affected only the local verifier and did not change the
+  cluster.

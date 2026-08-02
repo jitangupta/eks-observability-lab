@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend
+  namespace: online-boutique
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/part-of: online-boutique
+    lab.openai.com/cluster: c1
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: "eks-observability-lab-c1-web"
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/ip-address-type: "ipv4"
+    alb.ingress.kubernetes.io/subnets: "__C1_PUBLIC_SUBNET_IDS__"
+    alb.ingress.kubernetes.io/security-groups: "__C1_ALB_SECURITY_GROUP_ID__"
+    alb.ingress.kubernetes.io/manage-backend-security-group-rules: "false"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/healthcheck-protocol: "HTTP"
+    alb.ingress.kubernetes.io/healthcheck-port: "traffic-port"
+    alb.ingress.kubernetes.io/healthcheck-path: "/_healthz"
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/wafv2-acl-arn: "__C1_WAF_WEB_ACL_ARN__"
+    alb.ingress.kubernetes.io/tags: "Project=eks-observability-lab,Cluster=c1,Component=frontend"
+spec:
+  ingressClassName: alb
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80

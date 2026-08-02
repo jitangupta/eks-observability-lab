@@ -139,6 +139,8 @@ The pinned, rerunnable Phase 3 controller installation is documented in
 [`kubernetes/controllers/aws-load-balancer-controller/README.md`](kubernetes/controllers/aws-load-balancer-controller/README.md).
 The C2-first Phase 4 installation is documented in
 [`kubernetes/c2/README.md`](kubernetes/c2/README.md).
+The gated Phase 5 C1 installation and cross-region alias are documented in
+[`kubernetes/c1/README.md`](kubernetes/c1/README.md).
 
 ### 3. Observability session
 
