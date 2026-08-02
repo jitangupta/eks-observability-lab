@@ -6,8 +6,9 @@ an explicitly permitted private dependency from Cluster C1 to Cluster C2. The
 environment is monitored, deliberately disrupted through network and configuration
 faults, and investigated to evidence-backed root causes.
 
-The implementation is intentionally scoped for a 12-hour build window. The priority
-is a working, repeatable incident demonstration rather than production-grade breadth.
+The implementation is intentionally scoped as a disposable technical exercise. The
+priority is a working, repeatable incident demonstration rather than production-grade
+breadth.
 
 ## Success criteria
 
@@ -38,10 +39,8 @@ is a working, repeatable incident demonstration rather than production-grade bre
   storage and access restricted to `cartservice`.
 
 See [architecture/architecture.md](architecture/architecture.md) for the complete
-design and traffic flows.
-
-Follow [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the locked, dependency-
-ordered build, validation, fault, evidence, and teardown sequence.
+design and traffic flows. Each implementation directory contains its own deployment,
+verification, and operating instructions.
 
 ## Phase 12 submission index
 
@@ -60,33 +59,9 @@ ordered build, validation, fault, evidence, and teardown sequence.
 
 ## Repository layout
 
-The initial scaffold is deliberately small. The remaining folders are created in the
-implementation session that owns them.
-
 ```text
 eks-observability-lab/
 |-- README.md
-|-- IMPLEMENTATION_PLAN.md
-|-- architecture/
-|   `-- architecture.md
-|-- decisions/
-|   |-- README.md
-|   |-- 001-use-nacl-for-network-fault.md
-|   |-- 002-use-grafana-cloud.md
-|   `-- 003-use-in-cluster-redis.md
-|-- terraform/
-|   `-- README.md
-`-- archive/
-    |-- BRIEF.md
-    `-- DECISIONS.md
-```
-
-Planned final layout:
-
-```text
-eks-observability-lab/
-|-- README.md
-|-- IMPLEMENTATION_PLAN.md
 |-- WRITEUP.md
 |-- DEMO.md
 |-- AI-LOG.md
@@ -102,20 +77,18 @@ eks-observability-lab/
 |-- verification/
 |-- faults/
 |-- evidence/
-|-- rca/
-`-- archive/
+`-- rca/
 ```
 
-`kubernetes/` remains broader than `helm-charts/`: it will hold Helm values or charts
-alongside NetworkPolicies, namespaces, cross-cluster service wiring, and other small
-manifests.
+`kubernetes/` contains the vendored application chart, regional values, controllers,
+NetworkPolicies, observability configuration, and cross-cluster service wiring.
 
-## Session plan
+## Implementation guide
 
-Each implementation area can be completed in a separate Codex session. Sessions
-should read this README and the architecture document before making changes.
+Deploy and validate the environment in the following dependency order. Each area has
+a dedicated README with prerequisites, commands, and exit checks.
 
-### 1. Terraform session
+### 1. Terraform foundation
 
 Create the AWS foundation:
 
@@ -127,13 +100,13 @@ Create the AWS foundation:
 - C2 internal NLB security group supplied at NLB creation time.
 - One-minute VPC Flow Logs delivered to CloudWatch Logs.
 - EKS API endpoints private or public access restricted to the operator CIDR.
-- Outputs needed by later sessions: VPC/subnet IDs, cluster names, CIDRs,
+- Outputs needed by later components: VPC/subnet IDs, cluster names, CIDRs,
   security-group IDs, NACL IDs, and regions.
 
 Do not implement reusable enterprise Terraform abstractions under this deadline.
 Prefer small, readable root modules and pinned module/provider versions.
 
-### 2. Kubernetes session
+### 2. Kubernetes workloads and networking
 
 Deploy and split Online Boutique:
 
@@ -163,7 +136,7 @@ documented in [`verification/README.md`](verification/README.md).
 The strict Phase 9 UTC-stamped healthy evidence bundle is documented in
 [`evidence/README.md`](evidence/README.md).
 
-### 3. Observability session
+### 3. Observability
 
 Add the minimum signals required to investigate both incidents:
 
@@ -181,7 +154,7 @@ Add the minimum signals required to investigate both incidents:
 
 Test notification delivery before relying on any alert.
 
-### 4. Verification session
+### 4. Verification
 
 Build a scoped Python/boto3 verifier that emits human-readable results and JSON and
 returns non-zero on failure. It must:
@@ -197,7 +170,7 @@ returns non-zero on failure. It must:
 Scope discovery to this deployment's VPC IDs, cluster names, and tags rather than the
 entire AWS account.
 
-### 5. Fault session
+### 5. Fault injection and restoration
 
 Create idempotent Python inject and restore commands.
 
@@ -218,7 +191,7 @@ OOM at startup, not as an organic memory leak.
 Both workflows must print UTC timestamps, changed resource IDs, validation results,
 and the exact restoration command.
 
-### 6. Evidence session
+### 6. Evidence capture
 
 Capture a healthy baseline before injecting either fault. For each incident preserve:
 
@@ -233,7 +206,7 @@ Capture a healthy baseline before injecting either fault. For each incident pres
 
 Use UTC consistently and never rely on Kubernetes events remaining available later.
 
-### 7. RCA and presentation session
+### 7. RCA and presentation
 
 Write one RCA per fault with: impact, alert triage, investigation trail, evidence,
 root cause, blast radius, timeline, remediation, and preventative actions. Then add:

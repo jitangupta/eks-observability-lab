@@ -12,8 +12,7 @@ available.
 
 ### Assistance
 
-- Read `IMPLEMENTATION_PLAN.md` and mapped Phase 2 to the official Online Boutique
-  Helm chart.
+- Mapped the Phase 2 requirements to the official Online Boutique Helm chart.
 - Resolved the upstream `v0` ref to an exact commit and recorded its chart and
   application versions.
 - Vendored only the upstream `helm-chart/` directory and copied the upstream
