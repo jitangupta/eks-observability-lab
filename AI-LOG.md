@@ -202,3 +202,50 @@ available.
   overwrite the protected `$HOME` variable. The corrected command used
   `$homeResponse`; this error affected only the local verifier and did not change the
   cluster.
+
+## 2026-08-02 - Phase 6: Apply and prove application NetworkPolicies
+
+### Assistance
+
+- Added permanent default-deny, DNS, same-namespace application, ALB-to-frontend,
+  cross-region cart, cart-to-Redis, and Redis-from-cart policies.
+- Added a separately labeled fallback policy that allows only frontend and checkout
+  to use the temporary selectorless C1 cart Service or translated C2 TCP/30770
+  endpoint. The permanent TCP/7070 NLB rule remains present for recovery.
+- Added a rerunnable installer that verifies the VPC CNI `PolicyEndpoint` CRD and
+  `aws-eks-nodeagent` container before applying policies.
+- Added a verifier that uses short-lived Deployments for negative tests. AWS VPC CNI
+  does not enforce NetworkPolicy on standalone Pods without owner references, so a
+  `kubectl run` probe could have produced a false pass.
+- Accounted for TCP NLB IP-target source translation: client-IP preservation is
+  disabled by default, so C2 permits the NLB private-subnet range while the C1 egress
+  policy and NLB security group enforce the authorized caller boundary.
+
+### Verification and corrections
+
+- Server-side dry-run accepted every policy in its target cluster and confirmed the
+  VPC CNI agent and `PolicyEndpoint` CRD in both clusters.
+- Corrected the probe Deployment after live API dry-run found that an unquoted shell
+  command containing `:` had been parsed as a YAML mapping instead of a string.
+- Corrected the verifier after `kubectl rollout status deployment --all` proved
+  unsupported by the installed client. The replacement uses
+  `kubectl wait deployment --all --for=condition=Available`.
+- Corrected the cart log assertion after PowerShell applied `-notmatch` separately to
+  each array element; joining the log output before matching fixed the false failure.
+  Live load-generator, frontend, checkout, and C2 cart logs disproved the temporary
+  assumption that authorized traffic had stopped.
+- Corrected expected native-command failure handling because Windows PowerShell
+  converted redirected `kubectl exec` stderr into a terminating error under
+  `ErrorActionPreference=Stop`.
+- The final verifier passed: an unauthorized C1 Deployment could not reach
+  `cartservice:7070`, an unauthorized C2 Deployment could not reach
+  `redis-cart:6379`, all application Deployments were Available, authorized cart
+  calls reached C2, and Redis returned `PONG`.
+- Repeated the complete local-port-forward user journey after enforcement. Home,
+  product detail, add-to-cart, cart view, and checkout returned HTTP 200, and the
+  checkout confirmation was present.
+- Confirmed both worker nodes have no external IP, all ordinary application and Redis
+  Services are `ClusterIP`, no ALB/NLB exists in either lab Region, and the temporary
+  C2 TCP/30770 rule accepts only `10.10.0.0/16`. The pending NLB Service remains
+  externally blocked and the fallback remains explicitly outside the formal Phase 4
+  and Phase 5 gates.

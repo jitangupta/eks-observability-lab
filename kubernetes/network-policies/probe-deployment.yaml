@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phase6-unauthorized
+  namespace: online-boutique
+  labels:
+    app: phase6-unauthorized
+    lab.openai.com/verification: phase6
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phase6-unauthorized
+  template:
+    metadata:
+      labels:
+        app: phase6-unauthorized
+        lab.openai.com/verification: phase6
+    spec:
+      containers:
+      - name: probe
+        image: busybox:1.36.1
+        command:
+        - sh
+        - -c
+        - "trap : TERM INT; sleep 3600 & wait"
+        resources:
+          requests:
+            cpu: 5m
+            memory: 8Mi
+          limits:
+            cpu: 50m
+            memory: 32Mi

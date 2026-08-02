@@ -141,6 +141,8 @@ The C2-first Phase 4 installation is documented in
 [`kubernetes/c2/README.md`](kubernetes/c2/README.md).
 The gated Phase 5 C1 installation and cross-region alias are documented in
 [`kubernetes/c1/README.md`](kubernetes/c1/README.md).
+The VPC CNI-enforced Phase 6 application policies and probes are documented in
+[`kubernetes/network-policies/README.md`](kubernetes/network-policies/README.md).
 
 ### 3. Observability session
 

@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cart-nodeport-fallback
+  namespace: online-boutique
+  labels:
+    lab.openai.com/temporary-workaround: nodeport
+spec:
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - frontend
+      - checkoutservice
+  policyTypes:
+  - Egress
+  egress:
+  # Depending on where the VPC CNI evaluates Service translation, it can see
+  # either the C1 selectorless Service address/port or the C2 node endpoint.
+  - to:
+    - ipBlock:
+        cidr: __C1_CART_SERVICE_CLUSTER_IP__/32
+    ports:
+    - protocol: TCP
+      port: 7070
+  - to:
+    - ipBlock:
+        cidr: 10.20.0.0/19
+    ports:
+    - protocol: TCP
+      port: 30770
