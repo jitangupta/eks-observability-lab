@@ -1,0 +1,28 @@
+# Copy to terraform.tfvars. The real file is intentionally ignored by Git.
+operator_cidr = "203.0.113.10/32"
+
+# Optional: omit to use environment variables, an instance role, or AWS SSO's
+# normal credential chain.
+aws_profile = "my-aws-profile"
+
+# The defaults use one on-demand worker per cluster. C1 needs more memory for the
+# main Online Boutique deployment; C2 only runs cartservice and Redis.
+c1_node_instance_types = ["t3a.large"]
+c2_node_instance_types = ["t3a.medium"]
+
+c1_node_group = {
+  min_size     = 1
+  max_size     = 1
+  desired_size = 1
+}
+
+c2_node_group = {
+  min_size     = 1
+  max_size     = 1
+  desired_size = 1
+}
+
+tags = {
+  Owner      = "your-name"
+  CostCenter = "interview-lab"
+}

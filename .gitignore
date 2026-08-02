@@ -1,0 +1,18 @@
+# Terraform working files and local credentials
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+.terraformrc
+terraform.rc
+crash.log
+crash.*.log
+
+# Cluster access and generated evidence can contain credentials or identifiers
+kubeconfig*
+.env
+.env.*
+evidence/generated/
+secrets/
