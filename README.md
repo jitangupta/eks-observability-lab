@@ -145,6 +145,8 @@ The VPC CNI-enforced Phase 6 application policies and probes are documented in
 [`kubernetes/network-policies/README.md`](kubernetes/network-policies/README.md).
 The scoped Phase 8 AWS/Kubernetes verifier and its state-aware active probes are
 documented in [`verification/README.md`](verification/README.md).
+The strict Phase 9 UTC-stamped healthy evidence bundle is documented in
+[`evidence/README.md`](evidence/README.md).
 
 ### 3. Observability session
 

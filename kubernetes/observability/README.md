@@ -85,6 +85,23 @@ the stack's hosted Prometheus and Loki data sources directly, defaults to UTC an
 one-hour evidence window, and covers dependency health/latency, workload readiness,
 restarts/OOMs, CPU/memory, and application logs for both clusters.
 
+The `Application errors detected` alert intentionally excludes the Online Boutique
+load generator's expected rejection of `visa_electron` cards. Without this narrow
+line filter, normal synthetic checkout traffic repeatedly creates false incidents:
+
+```logql
+sum by (cluster, service) (
+  count_over_time(
+    {cluster=~"c1|c2",namespace="online-boutique",level=~"error|fatal"}
+      != "visa_electron credit cards"
+    [5m]
+  )
+)
+```
+
+Do not broaden the exclusion to all payment or checkout errors; those remain useful
+application-availability symptoms during a real incident.
+
 ## Remaining account-side requirements
 
 Phase 7 still needs one Grafana service account with a short-lived token for

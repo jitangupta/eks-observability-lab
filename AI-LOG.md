@@ -293,3 +293,61 @@ available.
   skips: the authorized probe connected, the unauthorized probe was denied, and
   cleanup returned exit code zero. The UTC-stamped text and JSON reports were saved
   under `evidence/generated/phase8/`, satisfying the Phase 8 exit gate.
+
+## 2026-08-02 - Phase 9: Capture the healthy baseline
+
+### Assistance
+
+- Added a strict UTC-stamped baseline capture command that re-runs the full healthy
+  verifier and preserves its human and JSON output inside the Phase 9 bundle.
+- Added an HTTP session journey covering home, product detail, add-to-cart, cart
+  view, and checkout confirmation. The evidence records response metadata and
+  hashes without retaining response bodies or form values.
+- Added captures for the current C1-to-C2 blackbox success and latency, C1/C2 Pod
+  health, Redis `PONG`, ALB/NLB target health, WAF association, and the authorized
+  and unauthorized policy outcomes.
+- Added Grafana API capture for the dashboard definition, provisioned alert rules,
+  active-alert state, and a rendered one-hour UTC dashboard PNG. The command reads
+  a short-lived token only from an environment variable and never persists it.
+- Made the Phase 9 gate fail closed: a missing evidence category writes a failed
+  manifest and blocks fault injection instead of claiming a partial baseline.
+
+### Verification and corrections
+
+- Python compilation and eight deterministic unit tests passed. The tests cover UTC
+  path stamps, Prometheus scalar parsing, Pod readiness/restart summarization,
+  verifier evidence selection, and alert-state interpretation.
+- The first dependency-complete live preflight proved the verifier, user journey,
+  Pod, Redis, edge, and policy evidence captures. It also corrected a query
+  assumption: the `cluster="c1"` external label is attached during remote-write and
+  is absent from Prometheus local storage, so the in-cluster baseline query selects
+  the uniquely named `cross-region-cart` job without that label.
+- A direct Windows `kubectl exec` test then showed that an embedded PromQL label
+  selector lost its quotes before reaching `promtool`. The final capture queries the
+  bare allowlisted metric and extracts exactly one returned series with the
+  `cross-region-cart` job label, avoiding shell-specific quoting.
+- The corrected preflight captured cross-region success at 0.063901 seconds and
+  healthy C1/C2 Pods and Redis. It correctly refused the formal gate because an old
+  ALB target was still draining and no Grafana read token was present; neither is
+  recorded as a passed baseline.
+- A Grafana email screenshot and alert history exposed recurring false incidents in
+  `Application errors detected`. Loki showed that every matching frontend line was
+  the load generator's expected rejection of a `visa_electron` card, not an outage.
+- Updated only that live Grafana rule with a narrow line exclusion for the known
+  message. Grafana accepted the LogQL preview, saved the rule successfully, and
+  showed all five `phase7-1m` rules Normal both immediately and after another full
+  evaluation interval. The repository observability runbook now records the exact
+  reproducible query and warns against excluding other checkout/payment errors.
+- Live capture remains an explicit operator action because it requires a short-lived
+  read-only Grafana service-account token. A successful `manifest.json` is the Phase
+  9 exit gate; implementation and local tests alone do not claim that gate passed.
+- The operator completed the strict live capture from `2026-08-02T16:43:57Z` through
+  `2026-08-02T16:45:16Z`. The manifest reports `PASS=9`, `FAIL=0`: the full verifier,
+  checkout journey, 0.063906-second cart probe, 12 Ready application Pods, Redis,
+  ALB/NLB/WAF checks, policy probes, five quiet Grafana alerts, and dashboard render
+  all passed. This satisfies the Phase 9 exit gate.
+- Visually reviewed the rendered one-hour UTC dashboard. Its current values show
+  cart and frontend `UP`, C1/C2 ready counts of 10/2, and zero restarts and OOMs.
+  The lookback still contains earlier transient frontend-probe dips and a pre-filter
+  synthetic card-rejection log; these are historical context rather than active
+  alert state and can be aged out with an optional later recapture.
