@@ -485,3 +485,37 @@ available.
   frontend availability messages. Archived the curated image under
   `evidence/phase11/`, recorded its SHA-256, and closed the final Phase 11 evidence
   gap.
+
+## 2026-08-03 - Phase 12: RCAs and presentation package
+
+### Assistance
+
+- Mapped the repository artifacts to all six deliverables and added a root submission
+  index.
+- Drafted one RCA per fault using the required impact, alert triage, investigation,
+  evidence, root cause, blast radius, timeline, remediation, and prevention headings.
+- Created a timed 45-minute demo runbook with a manifest-bound emergency recovery
+  card and an impact-first executive RCA script.
+- Consolidated design decisions, explicit trade-offs, skipped production work, and
+  measured test/incident results in `WRITEUP.md`.
+- Indexed the two operator-provided Phase 12 recordings without treating them as a
+  substitute for structured evidence.
+
+### Verification and corrections
+
+- Derived every incident time and numerical claim from the final PASS manifests and
+  summaries rather than estimating from screenshots.
+- Corrected the presentation narrative so Fault 1 is described as cart dependency
+  loss while the frontend remained reachable; it is not overstated as a total site
+  outage.
+- Identified that `Application errors detected` began before the successful Fault 2
+  injection. The RCA explicitly excludes it as evidence of OOM detection and relies
+  on the direct OOM/restart and frontend availability alerts that began at 18:21:30Z.
+- Kept the exact Fault 2 outage duration and failed-request count unclaimed because
+  the evidence contains point-in-time HTTP probes rather than continuous request
+  accounting.
+- Re-ran all offline suites: 5 verifier tests, 8 healthy-capture tests, and 17 fault
+  tests passed. `terraform fmt -check` and `terraform validate` also passed; Terraform
+  emitted only a local sandbox permission warning while reading the user's CLI
+  configuration directory.
+- Checked all local Markdown links in the Phase 12 package; every target resolved.

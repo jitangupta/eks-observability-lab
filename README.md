@@ -43,6 +43,21 @@ design and traffic flows.
 Follow [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the locked, dependency-
 ordered build, validation, fault, evidence, and teardown sequence.
 
+## Phase 12 submission index
+
+- **Architecture:** [`architecture/corrected-architecture.excalidraw`](architecture/corrected-architecture.excalidraw)
+  and [`architecture/architecture.md`](architecture/architecture.md)
+- **Infrastructure/configuration:** [`terraform/`](terraform/) and
+  [`kubernetes/`](kubernetes/)
+- **Python verification:** [`verification/verify.py`](verification/verify.py) with
+  [`verification/README.md`](verification/README.md)
+- **Fault RCAs:** [`rca/fault1-nacl.md`](rca/fault1-nacl.md) and
+  [`rca/fault2-productcatalog-oom.md`](rca/fault2-productcatalog-oom.md)
+- **Design choices, trade-offs, and results:** [`WRITEUP.md`](WRITEUP.md)
+- **Timed live demo and recovery:** [`DEMO.md`](DEMO.md)
+- **Evidence index:** [`evidence/README.md`](evidence/README.md)
+- **AI collaboration record:** [`AI-LOG.md`](AI-LOG.md)
+
 ## Repository layout
 
 The initial scaffold is deliberately small. The remaining folders are created in the

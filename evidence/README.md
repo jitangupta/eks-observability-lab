@@ -4,6 +4,31 @@
 fault is injected. It is a strict gate: every required Phase 9 check must pass for
 the command to return zero and write a `PASS` manifest.
 
+## Published Fault 1 email evidence
+
+The following Phase 10 screenshots are deliberately stored outside the ignored
+`generated/` tree so they can be published and used in the Phase 12 demo:
+
+- [`fault1-grafana-email-firing.png`](fault1-grafana-email-firing.png) confirms delivery
+  of the cross-region cart probe FIRING notification.
+- [`fault1-grafana-email-resolved.png`](fault1-grafana-email-resolved.png) confirms
+  delivery of the matching RESOLVED notification after restoration.
+
+## Phase 12 video evidence
+
+Two operator-provided screen recordings are stored beside the curated images:
+
+- [`grafana-dashboard.mp4`](grafana-dashboard.mp4) — 43-second dashboard
+  walkthrough for the observability portion of the presentation.
+- [`live-alert.mp4`](live-alert.mp4) — 2-minute 9-second recording of live alert
+  behavior.
+
+These recordings are presentation aids. They do not, by themselves, prove the
+network isolation, fault root cause, or full investigation sequence. The scoped
+verifier reports and the Phase 10/11 timestamped JSON/text bundles remain the
+authoritative evidence. The live interview repeats the investigation using
+[`../DEMO.md`](../DEMO.md).
+
 ## Prerequisites
 
 Complete the Phase 8 healthy gate first. The command uses the same Python packages,
