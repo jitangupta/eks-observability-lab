@@ -104,7 +104,7 @@ if ($LASTEXITCODE -ne 0) {
 if ([string]::IsNullOrWhiteSpace($c2CartNlbHostname)) {
   throw "Phase 4 exit gate is not met: cartservice-internal has no NLB hostname"
 }
-if ($c2CartNlbHostname -notmatch "^[a-zA-Z0-9.-]+\.elb\.amazonaws\.com$") {
+if ($c2CartNlbHostname -notmatch "^[a-zA-Z0-9.-]+\.elb\.[a-z0-9-]+\.amazonaws\.com(?:\.cn)?$") {
   throw "C2 cart endpoint is not an AWS load-balancer DNS name: $c2CartNlbHostname"
 }
 

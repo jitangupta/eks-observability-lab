@@ -1,0 +1,70 @@
+alertmanager:
+  enabled: false
+
+prometheus-pushgateway:
+  enabled: false
+
+kube-state-metrics:
+  enabled: true
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      cpu: 150m
+      memory: 128Mi
+
+prometheus-node-exporter:
+  enabled: true
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+server:
+  persistentVolume:
+    enabled: false
+  retention: 2h
+  global:
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    evaluation_interval: 1m
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  extraSecretMounts:
+    - name: grafana-cloud-credentials
+      mountPath: /etc/grafana-cloud
+      secretName: grafana-cloud-credentials
+      readOnly: true
+  remoteWrite:
+    - url: https://prometheus-prod-43-prod-ap-south-1.grafana.net/api/prom/push
+      basic_auth:
+        username: "3417368"
+        password_file: /etc/grafana-cloud/token
+      queue_config:
+        capacity: 2500
+        max_shards: 4
+        min_shards: 1
+      write_relabel_configs:
+        - source_labels: [__name__]
+          action: keep
+          regex: >-
+            up|probe_success|probe_duration_seconds|probe_dns_lookup_time_seconds|probe_connect_duration_seconds|kube_pod_info|kube_pod_status_phase|kube_pod_container_info|kube_pod_container_status_ready|kube_pod_container_status_restarts_total|kube_pod_container_status_last_terminated_reason|kube_deployment_status_replicas|kube_deployment_status_replicas_available|kube_statefulset_status_replicas_ready|kube_node_status_condition|container_cpu_usage_seconds_total|container_memory_working_set_bytes|container_oom_events_total|node_memory_MemAvailable_bytes|node_memory_MemTotal_bytes
+
+scrapeConfigs:
+  kubernetes-api-servers:
+    enabled: false
+  kubernetes-services:
+    enabled: false
+  kubernetes-pods-slow:
+    enabled: false
+  prometheus-pushgateway:
+    enabled: false

@@ -69,7 +69,7 @@ Set the two contexts from Terraform outputs, then verify the stock cart address 
 the alias:
 
 ```powershell
-$clusters = terraform -chdir=.\terraform output -json clusters | ConvertFrom-Json
+$clusters = terraform "-chdir=.\terraform" output -json clusters | ConvertFrom-Json
 $c1 = $clusters.c1.name
 $c2 = $clusters.c2.name
 
@@ -142,7 +142,7 @@ Because the same AWS account restriction also prevents ALB creation, verify the 
 frontend locally without exposing a new public path:
 
 ```powershell
-$clusters = terraform -chdir=.\terraform output -json clusters | ConvertFrom-Json
+$clusters = terraform "-chdir=.\terraform" output -json clusters | ConvertFrom-Json
 $c1 = $clusters.c1.name
 kubectl --context $c1 -n online-boutique port-forward service/frontend 8080:80
 ```
@@ -154,7 +154,7 @@ baseline.
 When AWS enables ELBv2, remove the fallback before running the target installer:
 
 ```powershell
-$clusters = terraform -chdir=.\terraform output -json clusters | ConvertFrom-Json
+$clusters = terraform "-chdir=.\terraform" output -json clusters | ConvertFrom-Json
 $c1 = $clusters.c1.name
 kubectl --context $c1 -n online-boutique delete endpointslice cartservice-nodeport-fallback
 kubectl --context $c1 -n online-boutique delete service cartservice

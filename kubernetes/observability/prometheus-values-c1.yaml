@@ -1,0 +1,37 @@
+server:
+  global:
+    external_labels:
+      cluster: c1
+      region: us-east-1
+
+scrapeConfigs:
+  cross-region-cart:
+    job_name: cross-region-cart
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets:
+          - cartservice.online-boutique.svc.cluster.local:7070
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter.observability.svc.cluster.local:9115
+  c1-frontend:
+    job_name: c1-frontend
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://frontend.online-boutique.svc.cluster.local:80/
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter.observability.svc.cluster.local:9115

@@ -1,0 +1,5 @@
+server:
+  global:
+    external_labels:
+      cluster: c2
+      region: us-west-2

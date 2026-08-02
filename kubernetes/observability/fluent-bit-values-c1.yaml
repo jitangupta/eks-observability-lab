@@ -1,0 +1,8 @@
+env:
+  - name: CLUSTER_NAME
+    value: c1
+  - name: GRAFANA_CLOUD_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: grafana-cloud-credentials
+        key: token
